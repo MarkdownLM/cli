@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=67", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mdlm"
+version = "0.1.0"
+description = "CLI for markdownlm knowledge base"
+requires-python = ">=3.8"
+dependencies = ["requests>=2.28"]
+
+[project.scripts]
+mdlm = "mdlm.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mdlm*"]
