@@ -127,3 +127,36 @@ class ApiClient:
             self._url(f"/api/knowledge/{doc_id}"), timeout=_TIMEOUT
         )
         self._handle_response(resp)
+
+    def query_knowledge_base(
+        self, query: str, category: str
+    ) -> Dict[str, Any]:
+        """Query the knowledge base with a question and category."""
+        payload = {"query": query, "category": category}
+        resp = self._session.post(
+            self._url("/api/validation/query"), json=payload, timeout=_TIMEOUT
+        )
+        data = self._handle_response(resp)
+        return data
+
+    def validate_code(
+        self, code: str, task: str, category: str
+    ) -> Dict[str, Any]:
+        """Validate code against documented rules."""
+        payload = {"code": code, "task": task, "category": category}
+        resp = self._session.post(
+            self._url("/api/validation/validate"), json=payload, timeout=_TIMEOUT
+        )
+        data = self._handle_response(resp)
+        return data
+
+    def resolve_gap(
+        self, question: str, category: str
+    ) -> Dict[str, Any]:
+        """Resolve a documentation gap."""
+        payload = {"query": question, "category": category}
+        resp = self._session.post(
+            self._url("/api/gaps/detect"), json=payload, timeout=_TIMEOUT
+        )
+        data = self._handle_response(resp)
+        return data

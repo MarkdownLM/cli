@@ -398,6 +398,118 @@ def cmd_push(args: argparse.Namespace) -> None:
         print("Nothing to push — no changes detected.")
 
 
+def cmd_query(args: argparse.Namespace) -> None:
+    """Query the knowledge base for documented rules and patterns."""
+    query: str = args.query
+    category: str = args.category
+
+    if category not in VALID_CATEGORIES:
+        print(
+            f"Error: Unknown category '{category}'.\n"
+            f"Valid categories: {', '.join(sorted(VALID_CATEGORIES))}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    client = ApiClient()
+    try:
+        result = client.query_knowledge_base(query, category)
+        print(result.get("answer", "No answer found."))
+        if result.get("gap_detected"):
+            print("\nNote: A documentation gap was detected for this query.", file=sys.stderr)
+    except ApiError as e:
+        print(f"Error: {e.message}", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_validate(args: argparse.Namespace) -> None:
+    """Validate code against documented architectural and style rules."""
+    code_input: str = args.code
+    task: str = args.task
+    category: str = args.category
+
+    # Check if code_input is a file path
+    code_path = Path(code_input)
+    if code_path.exists() and code_path.is_file():
+        code = code_path.read_text(encoding="utf-8")
+    else:
+        # Treat it as inline code
+        code = code_input
+
+    if category not in VALID_CATEGORIES:
+        print(
+            f"Error: Unknown category '{category}'.\n"
+            f"Valid categories: {', '.join(sorted(VALID_CATEGORIES))}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    client = ApiClient()
+    try:
+        result = client.validate_code(code, task, category)
+        
+        # Print status and violations
+        status = result.get("status", "unknown")
+        print(f"Status: {status.upper()}")
+        
+        violations = result.get("violations", [])
+        if violations:
+            print(f"\nViolations found ({len(violations)}):")
+            for i, violation in enumerate(violations, 1):
+                print(f"  {i}. {violation.get('rule')}")
+                print(f"     Message: {violation.get('message')}")
+                if violation.get("fix_suggestion"):
+                    print(f"     Fix: {violation['fix_suggestion']}")
+        else:
+            print("No violations found.")
+        
+        fix_suggestion = result.get("fix_suggestion")
+        if fix_suggestion:
+            print(f"\nOverall suggestion: {fix_suggestion}")
+            
+    except ApiError as e:
+        print(f"Error: {e.message}", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_resolve_gap(args: argparse.Namespace) -> None:
+    """Detect and log documentation gaps for architectural decisions."""
+    question: str = args.question
+    category: str = args.category
+
+    if category not in VALID_CATEGORIES:
+        print(
+            f"Error: Unknown category '{category}'.\n"
+            f"Valid categories: {', '.join(sorted(VALID_CATEGORIES))}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    client = ApiClient()
+    try:
+        result = client.resolve_gap(question, category)
+        
+        gap_detected = result.get("gap_detected", False)
+        resolution_mode = result.get("resolution_mode", "none")
+        
+        print(f"Gap detected: {gap_detected}")
+        print(f"Resolution mode: {resolution_mode}")
+        
+        if result.get("resolution"):
+            print(f"\nResolution: {result['resolution']}")
+        
+        if result.get("gap_id"):
+            print(f"Gap ID: {result['gap_id']}")
+            
+    except ApiError as e:
+        print(f"Error: {e.message}", file=sys.stderr)
+        sys.exit(1)
+
+    # Exit with error code if gap was detected and mode is ask_user
+    if gap_detected and resolution_mode == "ask_user":
+        sys.exit(1)
+
+
 # ---------------------------------------------------------------------------
 # Argument parser
 # ---------------------------------------------------------------------------
@@ -448,6 +560,54 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Also delete docs that have been removed locally",
     )
 
+    # query
+    p_query = sub.add_parser("query", help="Query the knowledge base")
+    p_query.add_argument(
+        "query",
+        metavar="QUERY",
+        help="Your question about architecture, patterns, or rules",
+    )
+    p_query.add_argument(
+        "--category",
+        metavar="CATEGORY",
+        default="general",
+        help=f"The domain to query ({', '.join(sorted(VALID_CATEGORIES))}; default: general)",
+    )
+
+    # validate
+    p_validate = sub.add_parser("validate", help="Validate code against rules")
+    p_validate.add_argument(
+        "code",
+        metavar="CODE",
+        help="The code snippet to validate (can be a file path or inline code)",
+    )
+    p_validate.add_argument(
+        "--task", "-t",
+        metavar="TASK",
+        required=True,
+        help="One-sentence description of what the code does",
+    )
+    p_validate.add_argument(
+        "--category", "-c",
+        metavar="CATEGORY",
+        default="general",
+        help=f"The domain to validate against ({', '.join(sorted(VALID_CATEGORIES))}; default: general)",
+    )
+
+    # resolve-gap
+    p_gap = sub.add_parser("resolve-gap", help="Resolve documentation gaps")
+    p_gap.add_argument(
+        "question",
+        metavar="QUESTION",
+        help="The undocumented decision or question",
+    )
+    p_gap.add_argument(
+        "--category", "-c",
+        metavar="CATEGORY",
+        default="general",
+        help=f"The domain ({', '.join(sorted(VALID_CATEGORIES))}; default: general)",
+    )
+
     return parser
 
 
@@ -457,6 +617,9 @@ _COMMANDS = {
     "pull": cmd_pull,
     "status": cmd_status,
     "push": cmd_push,
+    "query": cmd_query,
+    "validate": cmd_validate,
+    "resolve-gap": cmd_resolve_gap,
 }
 
 
