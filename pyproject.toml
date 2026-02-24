@@ -4,10 +4,21 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mdlm"
-version = "0.2.0"
+version = "0.2.1"
 description = "CLI for markdownlm knowledge base"
+
+readme = "README.md"
 requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [ { name = "sundanc", email = "rustu@rustu.dev" } ]
 dependencies = ["requests>=2.28"]
+keywords = ["markdown", "cli", "knowledge-base"]
+classifiers = [
+	"Programming Language :: Python :: 3",
+	"Programming Language :: Python :: 3 :: Only",
+	"License :: Other/Proprietary License",
+	"Operating System :: OS Independent",
+]
 
 [project.scripts]
 mdlm = "mdlm.cli:main"
@@ -15,3 +26,8 @@ mdlm = "mdlm.cli:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["mdlm*"]
+
+[project.urls]
+Homepage = "https://markdownlm.com"
+Repository = "https://github.com/markdownlm/cli"
+Issues = "https://github.com/markdownlm/cli/issues"
