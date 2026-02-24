@@ -1,6 +1,8 @@
-# mdlm
+# <img src="https://markdownlm.com/favicon-512x512.png" width="48" height="48" align="center" /> mdlm
 
-Bare-bones CLI for your [markdownlm](https://markdownlm.com) knowledge base.
+**mdlm** is a governance-focused CLI tool for your [markdownlm](https://markdownlm.com) knowledge base. It bridges the gap between your codebase and your team's architectural standards by providing a powerful toolkit for syncing documentation, querying patterns, and validating code against established rules.
+
+Built for consistency, `mdlm` allows you to enforce design patterns, surface documentation gaps, and ensure that your architectural decisions are consistently applied across your projects, all from the comfort of your terminal.
 
 ## Install
 
@@ -26,7 +28,13 @@ mdlm clone
 mdlm status
 
 # 5. Push changes back
-mdlm push --message "update auth docs"
+mdlm push -m "update auth docs"
+
+# 6. Query your patterns
+mdlm query "How to handle errors?" -c error_handling
+
+# 7. Validate code vs rules
+mdlm validate app/api.py -t "Add user endpoint" -c security
 ```
 
 ## Commands
@@ -34,10 +42,13 @@ mdlm push --message "update auth docs"
 | Command | Description |
 |---|---|
 | `mdlm configure` | Save API key to `~/.config/mdlm/config` (mode 0600) |
-| `mdlm clone [--category CATEGORY]` | Download all docs → `./knowledge/` |
+| `mdlm clone [-c CAT]` | Download all docs → `./knowledge/` |
 | `mdlm pull` | Refresh docs from server (overwrites local) |
 | `mdlm status` | Show new / modified / deleted files |
-| `mdlm push [--message MSG] [--category CATEGORY] [--delete]` | Upload local changes |
+| `mdlm push [-m MSG] [-c CAT] [--delete]` | Upload local changes |
+| `mdlm query Q [-c CAT]` | Query rules/patterns (def: `general`) |
+| `mdlm validate CODE -t TASK [-c CAT]` | Check code vs rules |
+| `mdlm resolve-gap Q [-c CAT]` | Resolve documentation gaps |
 
 ## Security
 

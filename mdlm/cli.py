@@ -531,7 +531,7 @@ def _build_parser() -> argparse.ArgumentParser:
     # clone
     p_clone = sub.add_parser("clone", help="Download your knowledge base")
     p_clone.add_argument(
-        "--category",
+        "--category", "-c",
         metavar="CATEGORY",
         help=f"Only clone this category ({', '.join(sorted(VALID_CATEGORIES))})",
     )
@@ -550,7 +550,7 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Change reason recorded in version history",
     )
     p_push.add_argument(
-        "--category",
+        "--category", "-c",
         metavar="CATEGORY",
         help="Only push files in this category",
     )
@@ -568,7 +568,7 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Your question about architecture, patterns, or rules",
     )
     p_query.add_argument(
-        "--category",
+        "--category", "-c",
         metavar="CATEGORY",
         default="general",
         help=f"The domain to query ({', '.join(sorted(VALID_CATEGORIES))}; default: general)",
